@@ -68,7 +68,7 @@ sub load_module {
 
 }
 
-use version; our $VERSION = '4.1.1';
+use version; our $VERSION = '4.1.2';
 
 my $desc;
 my $drives;
@@ -89,6 +89,7 @@ my %highs;
 my %lows;
 my %renames;
 my %ranges;
+my $sensor_loc;
 
 my %sensor_values;
 my %sensor_names;
@@ -103,6 +104,7 @@ $sensors   = 1;
 $status    = q{};
 $unknowns  = q{};
 $verbosity = 0;
+$sensor_loc = '.';
 
 ##############################################################################
 # subroutines
@@ -440,7 +442,7 @@ sub parse_sensors {
         ## no critic (InputOutput::RequireBriefOpen)
         open $name_handler,      q{<}, "$DEV_DIR/$device/name"
           or open $name_handler, q{<},
-          "$DEV_DIR/$device/device/name"
+          "$DEV_DIR/$device/$sensor_loc/name"
           or $plugin->nagios_exit( $plugin_module->UNKNOWN,
             "Error reading $DEV_DIR/$device/[device/]name: $OS_ERROR" );
         while (<$name_handler>) {
@@ -450,17 +452,17 @@ sub parse_sensors {
         }
         close $name_handler
           or $plugin->nagios_exit( $plugin_module->UNKNOWN,
-            "Error closing $DEV_DIR/$device/device/name: $OS_ERROR" );
+            "Error closing $DEV_DIR/$device/$sensor_loc/name: $OS_ERROR" );
         ## use critic
 
         # list sensors
-        opendir $dir_handle, "$DEV_DIR/$device/device/"
+        opendir $dir_handle, "$DEV_DIR/$device/$sensor_loc/"
           or return;
         my @sensors = apply { s/_input//mxs; }
         grep { m/^[^.].*_input/mxs } readdir $dir_handle;
         closedir $dir_handle
           or $plugin->nagios_exit( $plugin_module->UNKNOWN,
-            "Error closing $DEV_DIR/$device/device: $OS_ERROR" );
+            "Error closing $DEV_DIR/$device/$sensor_loc: $OS_ERROR" );
 
         for my $sensor (@sensors) {
 
@@ -470,11 +472,11 @@ sub parse_sensors {
 
             ## no critic (InputOutput::RequireBriefOpen)
             open $sensor_handler, q{<},
-              "$DEV_DIR/$device/device/$sensor"
+              "$DEV_DIR/$device/$sensor_loc/$sensor"
               . '_input'
               or $plugin->nagios_exit(
                 $plugin_module->UNKNOWN,
-                "Error reading $DEV_DIR/$device/device/$sensor"
+                "Error reading $DEV_DIR/$device/$sensor_loc/$sensor"
                   . "_input: $OS_ERROR"
               );
             while (<$sensor_handler>) {
@@ -485,7 +487,7 @@ sub parse_sensors {
             close $sensor_handler
               or $plugin->nagios_exit(
                 $plugin_module->UNKNOWN,
-                "Error closing $DEV_DIR/$device/device/$sensor"
+                "Error closing $DEV_DIR/$device/$sensor_loc/$sensor"
                   . "_input: $OS_ERROR"
               );
             ## use critic
