@@ -440,9 +440,9 @@ sub parse_sensors {
         my $name_handler;
 
         ## no critic (InputOutput::RequireBriefOpen)
-        open $name_handler,      q{<}, "$DEV_DIR/$device/modalias"
+        open $name_handler,      q{<}, "$DEV_DIR/$device/name"
           or open $name_handler, q{<},
-          "$DEV_DIR/$device/$sensor_loc/modalias"
+          "$DEV_DIR/$device/$sensor_loc/name"
           or $plugin->nagios_exit( $plugin_module->UNKNOWN,
             "Error reading $DEV_DIR/$device/[device/]name: $OS_ERROR" );
         while (<$name_handler>) {
